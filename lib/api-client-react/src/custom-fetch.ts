@@ -358,6 +358,14 @@ export async function customFetch<T = unknown>(
     }
   }
 
+  // Fallback to reading token from localStorage if in browser environment
+  if (!headers.has("authorization") && typeof window !== 'undefined') {
+    const token = localStorage.getItem('dp_token');
+    if (token) {
+      headers.set("authorization", `Bearer ${token}`);
+    }
+  }
+
   const requestInfo = { method, url: resolveUrl(input) };
 
   const response = await fetch(input, { ...init, method, headers });

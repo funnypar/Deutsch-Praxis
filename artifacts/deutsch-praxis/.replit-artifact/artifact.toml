@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "DeutschPraxis"
+version = "1.0.0"
+id = "artifacts/deutsch-praxis"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23581
+
+[services.development]
+run = "pnpm --filter @workspace/deutsch-praxis run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/deutsch-praxis", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/deutsch-praxis/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23581"
+BASE_PATH = "/"

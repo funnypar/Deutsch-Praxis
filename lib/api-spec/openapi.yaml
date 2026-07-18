@@ -3,20 +3,36 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: DeutschPraxis API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication
+  - name: profiles
+    description: User profiles
+  - name: exercises
+    description: Practice exercises
+  - name: vocab
+    description: Vocabulary items
+  - name: srs
+    description: Spaced repetition
+  - name: progress
+    description: Student progress
+  - name: classes
+    description: Class management
+  - name: dashboard
+    description: Dashboard data
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +40,688 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ── Auth ──────────────────────────────────────────────────────────────────
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterInput"
+      responses:
+        "201":
+          description: Registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Log in with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Log out
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current authenticated user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ── Profiles ──────────────────────────────────────────────────────────────
+  /profiles/me:
+    get:
+      operationId: getMyProfile
+      tags: [profiles]
+      summary: Get my profile
+      responses:
+        "200":
+          description: Profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+
+    patch:
+      operationId: updateMyProfile
+      tags: [profiles]
+      summary: Update my profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdate"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+
+  # ── Exercises ─────────────────────────────────────────────────────────────
+  /exercises:
+    get:
+      operationId: listExercises
+      tags: [exercises]
+      summary: List exercises
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [vocab, grammar, listening, writing]
+        - name: cefr_level
+          in: query
+          schema:
+            type: string
+            enum: [A1, A2, B1, B2, C1]
+        - name: grammar_tag
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: Exercises list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExerciseList"
+
+    post:
+      operationId: createExercise
+      tags: [exercises]
+      summary: Create an exercise (teacher only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExerciseInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Exercise"
+
+  /exercises/{id}:
+    get:
+      operationId: getExercise
+      tags: [exercises]
+      summary: Get an exercise by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Exercise
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Exercise"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    patch:
+      operationId: updateExercise
+      tags: [exercises]
+      summary: Update an exercise (teacher only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExerciseUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Exercise"
+
+    delete:
+      operationId: deleteExercise
+      tags: [exercises]
+      summary: Delete an exercise (teacher only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  # ── Vocabulary ────────────────────────────────────────────────────────────
+  /vocab:
+    get:
+      operationId: listVocab
+      tags: [vocab]
+      summary: List vocabulary items
+      parameters:
+        - name: cefr_level
+          in: query
+          schema:
+            type: string
+            enum: [A1, A2, B1, B2, C1]
+        - name: tag
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: Vocab list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VocabList"
+
+    post:
+      operationId: createVocabItem
+      tags: [vocab]
+      summary: Create a vocab item (teacher only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VocabItemInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VocabItem"
+
+  /vocab/{id}:
+    get:
+      operationId: getVocabItem
+      tags: [vocab]
+      summary: Get a vocab item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: VocabItem
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VocabItem"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    patch:
+      operationId: updateVocabItem
+      tags: [vocab]
+      summary: Update a vocab item (teacher only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VocabItemUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VocabItem"
+
+    delete:
+      operationId: deleteVocabItem
+      tags: [vocab]
+      summary: Delete a vocab item (teacher only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  # ── SRS ───────────────────────────────────────────────────────────────────
+  /srs/due:
+    get:
+      operationId: getDueSrsCards
+      tags: [srs]
+      summary: Get cards due for review today
+      responses:
+        "200":
+          description: Due cards with their vocab items
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SrsCardList"
+
+  /srs/review:
+    post:
+      operationId: submitSrsReview
+      tags: [srs]
+      summary: Submit a review result and update the card schedule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SrsReviewInput"
+      responses:
+        "200":
+          description: Updated card
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SrsCard"
+
+  /srs/enqueue:
+    post:
+      operationId: enqueueSrsVocab
+      tags: [srs]
+      summary: Add a vocab item to the student's SRS queue
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SrsEnqueueInput"
+      responses:
+        "201":
+          description: Card created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SrsCard"
+
+  /srs/stats:
+    get:
+      operationId: getSrsStats
+      tags: [srs]
+      summary: Get SRS statistics for the current student
+      responses:
+        "200":
+          description: SRS stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SrsStats"
+
+  # ── Progress ──────────────────────────────────────────────────────────────
+  /progress:
+    post:
+      operationId: recordProgress
+      tags: [progress]
+      summary: Record an exercise attempt
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProgressInput"
+      responses:
+        "200":
+          description: Recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProgressRecord"
+
+  /progress/summary:
+    get:
+      operationId: getProgressSummary
+      tags: [progress]
+      summary: Get progress summary with weak spots
+      responses:
+        "200":
+          description: Summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProgressSummary"
+
+  /progress/streak:
+    get:
+      operationId: getStreak
+      tags: [progress]
+      summary: Get streak and XP data
+      responses:
+        "200":
+          description: Streak and XP
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StreakData"
+
+  # ── Dashboard ─────────────────────────────────────────────────────────────
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Get all dashboard data in one call
+      responses:
+        "200":
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardData"
+
+  # ── Classes ───────────────────────────────────────────────────────────────
+  /classes:
+    get:
+      operationId: listClasses
+      tags: [classes]
+      summary: List classes (teacher sees their own; student sees enrolled)
+      responses:
+        "200":
+          description: Classes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClassList"
+
+    post:
+      operationId: createClass
+      tags: [classes]
+      summary: Create a class (teacher only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClassInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Class"
+
+  /classes/{id}:
+    get:
+      operationId: getClass
+      tags: [classes]
+      summary: Get class details with members
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Class with members
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClassDetail"
+
+    delete:
+      operationId: deleteClass
+      tags: [classes]
+      summary: Delete a class (teacher only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /classes/{id}/members:
+    post:
+      operationId: addClassMember
+      tags: [classes]
+      summary: Add a student to a class
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClassMemberInput"
+      responses:
+        "201":
+          description: Added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /classes/{id}/members/{studentId}:
+    delete:
+      operationId: removeClassMember
+      tags: [classes]
+      summary: Remove a student from a class
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Removed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /classes/{id}/assignments:
+    get:
+      operationId: listAssignments
+      tags: [classes]
+      summary: List assignments for a class
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Assignments
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssignmentList"
+
+    post:
+      operationId: createAssignment
+      tags: [classes]
+      summary: Create an assignment for a class
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignmentInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Assignment"
+
+  /classes/{id}/analytics:
+    get:
+      operationId: getClassAnalytics
+      tags: [classes]
+      summary: Get per-student analytics for a class (teacher only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Analytics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClassAnalytics"
+
+  # ── Admin ─────────────────────────────────────────────────────────────────
+  /admin/stats:
+    get:
+      operationId: getAdminStats
+      tags: [dashboard]
+      summary: Get platform-wide stats (teacher only)
+      responses:
+        "200":
+          description: Admin stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStats"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +732,606 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
+    # ── Auth ──────────────────────────────────────────────────────────────
+    RegisterInput:
+      type: object
+      required: [email, password, display_name, role]
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+          minLength: 8
+        display_name:
+          type: string
+        role:
+          type: string
+          enum: [student, teacher]
+        current_level:
+          type: string
+          enum: [A1, A2, B1, B2, C1]
+
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+
+    AuthResponse:
+      type: object
+      required: [token, user]
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+
+    User:
+      type: object
+      required: [id, email, role, display_name, created_at]
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        role:
+          type: string
+          enum: [student, teacher]
+        display_name:
+          type: string
+        current_level:
+          type: ["string", "null"]
+        created_at:
+          type: string
+
+    # ── Profiles ──────────────────────────────────────────────────────────
+    Profile:
+      type: object
+      required: [id, email, role, display_name, created_at]
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        role:
+          type: string
+          enum: [student, teacher]
+        display_name:
+          type: string
+        current_level:
+          type: ["string", "null"]
+        created_at:
+          type: string
+
+    ProfileUpdate:
+      type: object
+      properties:
+        display_name:
+          type: string
+        current_level:
+          type: string
+          enum: [A1, A2, B1, B2, C1]
+
+    # ── Exercises ──────────────────────────────────────────────────────────
+    Exercise:
+      type: object
+      required: [id, type, cefr_level, prompt, correct_answer, created_at]
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [vocab, grammar, listening, writing]
+        cefr_level:
+          type: string
+          enum: [A1, A2, B1, B2, C1]
+        grammar_tag:
+          type: ["string", "null"]
+        prompt:
+          type: string
+        options:
+          type: ["object", "null"]
+          additionalProperties: true
+        correct_answer:
+          type: string
+        audio_url:
+          type: ["string", "null"]
+        explanation:
+          type: ["string", "null"]
+        created_by:
+          type: ["integer", "null"]
+        created_at:
+          type: string
+
+    ExerciseList:
+      type: object
+      required: [exercises, total]
+      properties:
+        exercises:
+          type: array
+          items:
+            $ref: "#/components/schemas/Exercise"
+        total:
+          type: integer
+
+    ExerciseInput:
+      type: object
+      required: [type, cefr_level, prompt, correct_answer]
+      properties:
+        type:
+          type: string
+          enum: [vocab, grammar, listening, writing]
+        cefr_level:
+          type: string
+          enum: [A1, A2, B1, B2, C1]
+        grammar_tag:
+          type: string
+        prompt:
+          type: string
+        options:
+          type: object
+          additionalProperties: true
+        correct_answer:
+          type: string
+        audio_url:
+          type: string
+        explanation:
+          type: string
+
+    ExerciseUpdate:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [vocab, grammar, listening, writing]
+        cefr_level:
+          type: string
+          enum: [A1, A2, B1, B2, C1]
+        grammar_tag:
+          type: string
+        prompt:
+          type: string
+        options:
+          type: object
+          additionalProperties: true
+        correct_answer:
+          type: string
+        audio_url:
+          type: string
+        explanation:
+          type: string
+
+    # ── Vocab ──────────────────────────────────────────────────────────────
+    VocabItem:
+      type: object
+      required: [id, german_word, translation, cefr_level, created_at]
+      properties:
+        id:
+          type: integer
+        german_word:
+          type: string
+        translation:
+          type: string
+        example_sentence:
+          type: ["string", "null"]
+        cefr_level:
+          type: string
+          enum: [A1, A2, B1, B2, C1]
+        tags:
+          type: array
+          items:
+            type: string
+        created_at:
+          type: string
+
+    VocabList:
+      type: object
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/VocabItem"
+        total:
+          type: integer
+
+    VocabItemInput:
+      type: object
+      required: [german_word, translation, cefr_level]
+      properties:
+        german_word:
+          type: string
+        translation:
+          type: string
+        example_sentence:
+          type: string
+        cefr_level:
+          type: string
+          enum: [A1, A2, B1, B2, C1]
+        tags:
+          type: array
+          items:
+            type: string
+
+    VocabItemUpdate:
+      type: object
+      properties:
+        german_word:
+          type: string
+        translation:
+          type: string
+        example_sentence:
+          type: string
+        cefr_level:
+          type: string
+          enum: [A1, A2, B1, B2, C1]
+        tags:
+          type: array
+          items:
+            type: string
+
+    # ── SRS ───────────────────────────────────────────────────────────────
+    SrsCard:
+      type: object
+      required: [id, student_id, vocab_item_id, ease_factor, interval_days, next_review_date]
+      properties:
+        id:
+          type: integer
+        student_id:
+          type: integer
+        vocab_item_id:
+          type: integer
+        ease_factor:
+          type: number
+        interval_days:
+          type: integer
+        repetitions:
+          type: integer
+        next_review_date:
+          type: string
+        vocab_item:
+          $ref: "#/components/schemas/VocabItem"
+
+    SrsCardList:
+      type: object
+      required: [cards, total_due]
+      properties:
+        cards:
+          type: array
+          items:
+            $ref: "#/components/schemas/SrsCard"
+        total_due:
+          type: integer
+
+    SrsReviewInput:
+      type: object
+      required: [card_id, quality]
+      properties:
+        card_id:
+          type: integer
+        quality:
+          type: integer
+          minimum: 0
+          maximum: 5
+          description: "SM-2 quality rating: 0-1=Again, 2-3=Hard, 4=Good, 5=Easy"
+
+    SrsEnqueueInput:
+      type: object
+      required: [vocab_item_id]
+      properties:
+        vocab_item_id:
+          type: integer
+
+    SrsStats:
+      type: object
+      required: [total_cards, due_today, mastered, learning, new_cards]
+      properties:
+        total_cards:
+          type: integer
+        due_today:
+          type: integer
+        mastered:
+          type: integer
+        learning:
+          type: integer
+        new_cards:
+          type: integer
+        reviews_this_week:
+          type: integer
+
+    # ── Progress ──────────────────────────────────────────────────────────
+    ProgressInput:
+      type: object
+      required: [exercise_id, correct]
+      properties:
+        exercise_id:
+          type: integer
+        correct:
+          type: boolean
+
+    ProgressRecord:
+      type: object
+      required: [id, student_id, exercise_id, correct, attempts, last_attempted_at]
+      properties:
+        id:
+          type: integer
+        student_id:
+          type: integer
+        exercise_id:
+          type: integer
+        correct:
+          type: boolean
+        attempts:
+          type: integer
+        last_attempted_at:
+          type: string
+
+    WeakSpot:
+      type: object
+      required: [grammar_tag, accuracy, total_attempts]
+      properties:
+        grammar_tag:
+          type: string
+        accuracy:
+          type: number
+        total_attempts:
+          type: integer
+
+    ProgressSummary:
+      type: object
+      required: [total_exercises, correct_answers, accuracy, weak_spots]
+      properties:
+        total_exercises:
+          type: integer
+        correct_answers:
+          type: integer
+        accuracy:
+          type: number
+        weak_spots:
+          type: array
+          items:
+            $ref: "#/components/schemas/WeakSpot"
+        by_type:
+          type: object
+          additionalProperties: true
+
+    StreakData:
+      type: object
+      required: [current_streak, longest_streak, xp, level]
+      properties:
+        current_streak:
+          type: integer
+        longest_streak:
+          type: integer
+        xp:
+          type: integer
+        level:
+          type: integer
+        xp_to_next_level:
+          type: integer
+
+    # ── Dashboard ─────────────────────────────────────────────────────────
+    DashboardData:
+      type: object
+      required: [streak, xp, level, due_today, weak_spots, recent_activity]
+      properties:
+        streak:
+          type: integer
+        xp:
+          type: integer
+        level:
+          type: integer
+        xp_to_next_level:
+          type: integer
+        due_today:
+          type: integer
+        weak_spots:
+          type: array
+          items:
+            $ref: "#/components/schemas/WeakSpot"
+        recent_activity:
+          type: array
+          items:
+            $ref: "#/components/schemas/ActivityItem"
+        exercises_completed_today:
+          type: integer
+
+    ActivityItem:
+      type: object
+      required: [type, description, correct, timestamp]
+      properties:
+        type:
+          type: string
+        description:
+          type: string
+        correct:
+          type: boolean
+        timestamp:
+          type: string
+
+    # ── Classes ───────────────────────────────────────────────────────────
+    Class:
+      type: object
+      required: [id, teacher_id, name, created_at]
+      properties:
+        id:
+          type: integer
+        teacher_id:
+          type: integer
+        name:
+          type: string
+        member_count:
+          type: integer
+        created_at:
+          type: string
+
+    ClassList:
+      type: object
+      required: [classes]
+      properties:
+        classes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Class"
+
+    ClassMember:
+      type: object
+      required: [id, display_name, email, current_level]
+      properties:
+        id:
+          type: integer
+        display_name:
+          type: string
+        email:
+          type: string
+        current_level:
+          type: ["string", "null"]
+
+    ClassDetail:
+      type: object
+      required: [id, teacher_id, name, created_at, members]
+      properties:
+        id:
+          type: integer
+        teacher_id:
+          type: integer
+        name:
+          type: string
+        created_at:
+          type: string
+        members:
+          type: array
+          items:
+            $ref: "#/components/schemas/ClassMember"
+
+    ClassInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+
+    ClassMemberInput:
+      type: object
+      required: [student_email]
+      properties:
+        student_email:
+          type: string
+
+    Assignment:
+      type: object
+      required: [id, class_id, due_date, created_at]
+      properties:
+        id:
+          type: integer
+        class_id:
+          type: integer
+        exercise_id:
+          type: ["integer", "null"]
+        vocab_item_id:
+          type: ["integer", "null"]
+        due_date:
+          type: string
+        created_at:
+          type: string
+        exercise:
+          $ref: "#/components/schemas/Exercise"
+        vocab_item:
+          $ref: "#/components/schemas/VocabItem"
+
+    AssignmentList:
+      type: object
+      required: [assignments]
+      properties:
+        assignments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Assignment"
+
+    AssignmentInput:
+      type: object
+      required: [due_date]
+      properties:
+        exercise_id:
+          type: integer
+        vocab_item_id:
+          type: integer
+        due_date:
+          type: string
+
+    # ── Analytics ─────────────────────────────────────────────────────────
+    StudentAnalytics:
+      type: object
+      required: [student_id, display_name, accuracy, total_attempts, last_active]
+      properties:
+        student_id:
+          type: integer
+        display_name:
+          type: string
+        email:
+          type: string
+        current_level:
+          type: ["string", "null"]
+        accuracy:
+          type: number
+        total_attempts:
+          type: integer
+        last_active:
+          type: ["string", "null"]
+        weak_spots:
+          type: array
+          items:
+            $ref: "#/components/schemas/WeakSpot"
+
+    ClassAnalytics:
+      type: object
+      required: [class_id, class_name, students]
+      properties:
+        class_id:
+          type: integer
+        class_name:
+          type: string
+        students:
+          type: array
+          items:
+            $ref: "#/components/schemas/StudentAnalytics"
+
+    AdminStats:
+      type: object
+      required: [total_students, total_teachers, total_exercises, total_vocab, active_this_week]
+      properties:
+        total_students:
+          type: integer
+        total_teachers:
+          type: integer
+        total_exercises:
+          type: integer
+        total_vocab:
+          type: integer
+        active_this_week:
+          type: integer
+        exercises_by_level:
+          type: object
+          additionalProperties: true
+        exercises_by_type:
+          type: object
+          additionalProperties: true
