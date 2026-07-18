@@ -9,6 +9,7 @@ import progressRouter from "./progress";
 import dashboardRouter from "./dashboard";
 import classesRouter from "./classes";
 import listeningRouter from "./listening";
+import writingRouter from "./writing";
 
 const router: IRouter = Router();
 
@@ -22,5 +23,6 @@ router.use(progressRouter);
 router.use(dashboardRouter);
 router.use(classesRouter);
 router.use(listeningRouter);
+router.use(writingRouter);
 
 export default router;
