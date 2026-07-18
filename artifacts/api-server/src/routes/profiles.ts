@@ -15,6 +15,7 @@ router.get("/profiles/me", requireAuth, async (req, res): Promise<void> => {
     role: user.role,
     display_name: user.display_name,
     current_level: user.current_level ?? null,
+    avatar_url: user.avatar_url ?? null,
     created_at: user.created_at.toISOString(),
   });
 });
@@ -28,8 +29,14 @@ router.patch("/profiles/me", requireAuth, async (req, res): Promise<void> => {
   }
 
   const updates: Record<string, any> = {};
-  if (parsed.data.display_name) updates.display_name = parsed.data.display_name;
-  if (parsed.data.current_level) updates.current_level = parsed.data.current_level;
+  if (parsed.data.display_name !== undefined) updates.display_name = parsed.data.display_name;
+  if (parsed.data.current_level !== undefined) updates.current_level = parsed.data.current_level;
+  if (parsed.data.avatar_url !== undefined) updates.avatar_url = parsed.data.avatar_url;
+
+  if (Object.keys(updates).length === 0) {
+    res.status(400).json({ error: "No fields to update" });
+    return;
+  }
 
   const [updated] = await db
     .update(usersTable)
@@ -43,6 +50,7 @@ router.patch("/profiles/me", requireAuth, async (req, res): Promise<void> => {
     role: updated.role,
     display_name: updated.display_name,
     current_level: updated.current_level ?? null,
+    avatar_url: updated.avatar_url ?? null,
     created_at: updated.created_at.toISOString(),
   });
 });

@@ -12,6 +12,7 @@ export const usersTable = pgTable("users", {
   role: roleEnum("role").notNull().default("student"),
   display_name: text("display_name").notNull(),
   current_level: cefrEnum("current_level"),
+  avatar_url: text("avatar_url"),
   created_at: timestamp("created_at").defaultNow().notNull(),
 });
 

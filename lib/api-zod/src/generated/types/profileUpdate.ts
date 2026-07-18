@@ -10,4 +10,5 @@ import type { ProfileUpdateCurrentLevel } from './profileUpdateCurrentLevel';
 export interface ProfileUpdate {
   display_name?: string;
   current_level?: ProfileUpdateCurrentLevel;
+  avatar_url?: string | null;
 }

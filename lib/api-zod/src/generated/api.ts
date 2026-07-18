@@ -104,7 +104,8 @@ export const GetMyProfileResponse = zod.object({
  */
 export const UpdateMyProfileBody = zod.object({
   "display_name": zod.string().optional(),
-  "current_level": zod.enum(['A1', 'A2', 'B1', 'B2', 'C1']).optional()
+  "current_level": zod.enum(['A1', 'A2', 'B1', 'B2', 'C1']).optional(),
+  "avatar_url": zod.string().nullable().optional()
 })
 
 export const UpdateMyProfileResponse = zod.object({
@@ -113,6 +114,7 @@ export const UpdateMyProfileResponse = zod.object({
   "role": zod.enum(['student', 'teacher']),
   "display_name": zod.string(),
   "current_level": zod.string().nullish(),
+  "avatar_url": zod.string().nullish(),
   "created_at": zod.string()
 })
 

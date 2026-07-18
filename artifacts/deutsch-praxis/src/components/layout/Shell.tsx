@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { useLogout, User } from '@workspace/api-client-react';
-import { BookOpen, GraduationCap, LayoutDashboard, Settings, ListTree, Headphones, PenTool, BarChart3, LogOut, Menu, X, Users, BookA } from 'lucide-react';
+import { BookOpen, GraduationCap, LayoutDashboard, ListTree, Headphones, PenTool, BarChart3, LogOut, Menu, X, Users, BookA, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useQueryClient } from '@tanstack/react-query';
+import { ProfileDialog } from './ProfileDialog';
 
 interface ShellProps {
   user: User;
@@ -14,6 +15,7 @@ interface ShellProps {
 export function Shell({ user, children }: ShellProps) {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const queryClient = useQueryClient();
   const logout = useLogout();
   const [, setLocation] = useLocation();
@@ -93,8 +95,16 @@ export function Shell({ user, children }: ShellProps) {
         </div>
 
         <div className="p-4 border-t border-border mt-auto">
-          <div className="flex items-center gap-3 px-4 py-3 mb-2">
-            <Avatar className="h-10 w-10 border-2 border-secondary">
+          <button
+            type="button"
+            onClick={() => setProfileOpen(true)}
+            className="w-full flex items-center gap-3 px-4 py-3 mb-2 rounded-xl hover:bg-secondary transition-colors group text-left"
+            title="Profil bearbeiten"
+          >
+            <Avatar className="h-10 w-10 border-2 border-secondary shrink-0">
+              {user.avatar_url ? (
+                <AvatarImage src={user.avatar_url} alt={user.display_name} className="object-cover" />
+              ) : null}
               <AvatarFallback className="bg-primary/10 text-primary font-serif">
                 {user.display_name.substring(0, 2).toUpperCase()}
               </AvatarFallback>
@@ -103,12 +113,15 @@ export function Shell({ user, children }: ShellProps) {
               <span className="text-sm font-bold text-foreground truncate">{user.display_name}</span>
               <span className="text-xs text-muted-foreground capitalize">{user.role} {user.current_level ? `• ${user.current_level}` : ''}</span>
             </div>
-          </div>
+            <Settings className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+          </button>
           <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-destructive" onClick={handleLogout}>
             <LogOut className="h-5 w-5 mr-3" />
             Abmelden
           </Button>
         </div>
+
+        <ProfileDialog open={profileOpen} onOpenChange={setProfileOpen} />
       </div>
 
       {/* Main Content */}

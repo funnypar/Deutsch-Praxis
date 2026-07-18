@@ -14,5 +14,7 @@ export interface User {
   display_name: string;
   /** @nullable */
   current_level?: string | null;
+  /** @nullable */
+  avatar_url?: string | null;
   created_at: string;
 }

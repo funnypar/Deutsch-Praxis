@@ -65,6 +65,8 @@ export interface User {
   display_name: string;
   /** @nullable */
   current_level?: string | null;
+  /** @nullable */
+  avatar_url?: string | null;
   created_at: string;
 }
 
@@ -88,6 +90,8 @@ export interface Profile {
   display_name: string;
   /** @nullable */
   current_level?: string | null;
+  /** @nullable */
+  avatar_url?: string | null;
   created_at: string;
 }
 
@@ -105,6 +109,7 @@ export const ProfileUpdateCurrentLevel = {
 export interface ProfileUpdate {
   display_name?: string;
   current_level?: ProfileUpdateCurrentLevel;
+  avatar_url?: string | null;
 }
 
 export type ExerciseType = typeof ExerciseType[keyof typeof ExerciseType];
