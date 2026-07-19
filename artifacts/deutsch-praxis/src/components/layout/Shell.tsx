@@ -70,9 +70,9 @@ export function Shell({ user, children }: ShellProps) {
         <aside className={`
           fixed inset-y-0 left-0 z-40 w-64 bg-card border-r border-border
           transform transition-transform duration-200 ease-in-out flex flex-col
-          top-14
+          top-14 bottom-0
           ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-          md:relative md:top-0 md:h-auto md:sticky md:self-start md:max-h-[calc(100vh-3.5rem)]
+          md:sticky md:top-14 md:h-[calc(100vh-3.5rem)] md:translate-x-0
         `}>
           {/* Logo — desktop only */}
           <div className="p-5 hidden md:flex items-center gap-2 text-primary font-serif font-bold text-xl border-b border-border shrink-0">
@@ -104,8 +104,8 @@ export function Shell({ user, children }: ShellProps) {
             })}
           </nav>
 
-          {/* Bottom: stats + profile card */}
-          <SidebarBottom user={user} onOpenProfile={() => setProfileOpen(true)} />
+          {/* Bottom: stats widget */}
+          <SidebarBottom user={user} />
         </aside>
 
         {/* ── Main Content ─────────────────────────────────────── */}
