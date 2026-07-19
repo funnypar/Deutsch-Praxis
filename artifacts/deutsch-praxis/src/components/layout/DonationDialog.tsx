@@ -154,9 +154,9 @@ export function DonationDialog({ open, onOpenChange }: DonationDialogProps) {
             </div>
 
             {/* ── Address pill ─────────────────────────────────── */}
-            <div className="w-full flex items-center gap-2 bg-secondary rounded-xl px-3 py-2.5">
-              <span className={`text-lg font-bold leading-none ${wallet.text}`}>{wallet.icon}</span>
-              <span className="flex-1 text-xs font-mono text-muted-foreground break-all leading-relaxed">
+            <div className="w-full flex items-center gap-2 bg-secondary rounded-xl px-3 py-2.5 min-w-0">
+              <span className={`text-lg font-bold leading-none shrink-0 ${wallet.text}`}>{wallet.icon}</span>
+              <span className="flex-1 text-xs font-mono text-muted-foreground truncate min-w-0">
                 {wallet.address}
               </span>
               <CopyButton
