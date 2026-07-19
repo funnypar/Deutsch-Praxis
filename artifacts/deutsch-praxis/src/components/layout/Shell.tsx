@@ -7,9 +7,11 @@ import {
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLang } from '@/context/LangContext';
+import { Heart } from 'lucide-react';
 import { TopBar } from './TopBar';
 import { ProfileDialog } from './ProfileDialog';
 import { SidebarBottom } from './SidebarBottom';
+import { DonationDialog } from './DonationDialog';
 
 interface ShellProps {
   user: User;
@@ -20,10 +22,11 @@ export function Shell({ user, children }: ShellProps) {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [donationOpen, setDonationOpen] = useState(false);
   const queryClient = useQueryClient();
   const logout = useLogout();
   const [, setLocation] = useLocation();
-  const { t } = useLang();
+  const { t, lang } = useLang();
 
   const handleLogout = () => {
     logout.mutate(undefined, {
@@ -104,6 +107,20 @@ export function Shell({ user, children }: ShellProps) {
             })}
           </nav>
 
+          {/* Donation button */}
+          <div className="px-3 pb-2 shrink-0">
+            <button
+              onClick={() => setDonationOpen(true)}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl
+                bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600
+                text-white text-sm font-semibold shadow-sm transition-all duration-200
+                hover:shadow-md hover:-translate-y-0.5 active:translate-y-0"
+            >
+              <Heart className="h-4 w-4 fill-white/80" />
+              {lang === 'de' ? 'Projekt unterstützen' : 'Support us'}
+            </button>
+          </div>
+
           {/* Bottom: stats widget */}
           <SidebarBottom user={user} />
         </aside>
@@ -123,6 +140,7 @@ export function Shell({ user, children }: ShellProps) {
       )}
 
       <ProfileDialog open={profileOpen} onOpenChange={setProfileOpen} />
+      <DonationDialog open={donationOpen} onOpenChange={setDonationOpen} />
     </div>
   );
 }
