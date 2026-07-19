@@ -9,6 +9,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useLang } from '@/context/LangContext';
 import { TopBar } from './TopBar';
 import { ProfileDialog } from './ProfileDialog';
+import { SidebarBottom } from './SidebarBottom';
 
 interface ShellProps {
   user: User;
@@ -80,7 +81,7 @@ export function Shell({ user, children }: ShellProps) {
           </div>
 
           {/* Nav links */}
-          <nav className="flex-1 overflow-y-auto py-5 px-3 flex flex-col gap-1">
+          <nav className="flex-1 overflow-y-auto py-4 px-3 flex flex-col gap-1">
             {links.map((link) => {
               const isActive =
                 location === link.href ||
@@ -102,6 +103,9 @@ export function Shell({ user, children }: ShellProps) {
               );
             })}
           </nav>
+
+          {/* Bottom: stats + profile card */}
+          <SidebarBottom user={user} onOpenProfile={() => setProfileOpen(true)} />
         </aside>
 
         {/* ── Main Content ─────────────────────────────────────── */}
